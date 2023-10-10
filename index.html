@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF to Text Converter</title>
+    <!-- Include pdf.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+</head>
+<body>
+    <input type="file" id="pdfInput" accept=".pdf">
+    <button id="convertBtn">Convert to Text</button>
+    <pre id="output"></pre>
+
+    <script>
+        document.getElementById('convertBtn').addEventListener('click', function () {
+            const fileInput = document.getElementById('pdfInput');
+            const outputElement = document.getElementById('output');
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                outputElement.textContent = 'Please select a PDF file.';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function (event) {
+                const arrayBuffer = event.target.result;
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                let text = '';
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const pageText = await page.getTextContent();
+                    text += pageText.items.map(item => item.str).join(' ');
+                }
+
+                outputElement.textContent = text;
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
